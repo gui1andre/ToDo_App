@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:provider/provider.dart';
-import 'package:todo_list/src/models/todo.dart';
-import 'package:todo_list/src/provider/todo_list.dart';
+
+
 
 import 'src/routes/routes.dart';
 
@@ -11,20 +10,16 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('pt_BR', null);
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-  runApp(const ToDoApp(
-    list: [],
-  ));
+  runApp(const ToDoApp());
 }
 
 class ToDoApp extends StatelessWidget {
-  const ToDoApp({super.key, required this.list});
-  final List<ToDo> list;
+  const ToDoApp({super.key,});
+
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => ToDoProvider(),
-      child: MaterialApp(
+    return MaterialApp(
           themeMode: ThemeMode.system,
           theme: ThemeData(
             primaryColor: Colors.blue.shade700,
@@ -83,7 +78,6 @@ class ToDoApp extends StatelessWidget {
             ),
           ),
           initialRoute: '/',
-          routes: routes),
-    );
+          routes: routes);
   }
 }

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
+import 'package:todo_list/src/api/webapi.dart';
+import 'package:todo_list/src/components/loader_dialog.dart';
 import 'package:todo_list/src/components/message_dialog.dart';
 import 'package:todo_list/src/models/todo.dart';
-import 'package:todo_list/src/provider/todo_list.dart';
 
 class AddTodo extends StatefulWidget {
   const AddTodo({super.key});
@@ -14,6 +14,7 @@ class AddTodo extends StatefulWidget {
 
 class _AddTodoState extends State<AddTodo> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final ChamadasApi api = ChamadasApi();
 
   DateTime eventDate = DateTime.now();
   TimeOfDay hrsEvent = TimeOfDay.now();
@@ -217,7 +218,7 @@ class _AddTodoState extends State<AddTodo> {
                     padding: const EdgeInsets.only(bottom: 16),
                     child: TextFormField(
                       controller: etapasText,
-                      maxLength: 15,
+                      maxLength: 20,
                       decoration: InputDecoration(
                           label: Text(
                             'Etapas',
@@ -225,19 +226,19 @@ class _AddTodoState extends State<AddTodo> {
                           ),
                           suffixIcon: IconButton(
                             onPressed: () {
-                              if(etapasText.text.length < 5){
-                                showMessageDialog(context, 'A etapa deve ter pelo menos 5 caracteres');
-                              }else{
+                              if (etapasText.text.length < 5) {
+                                showMessageDialog(context,
+                                    'A etapa deve ter pelo menos 5 caracteres');
+                              } else {
                                 if (etapasText.text.isNotEmpty) {
-                                setState(() {
-                                  etapas.add(Etapas(
-                                      id: etapas.length + 1,
-                                      nome: etapasText.text));
-                                  etapasText.text = '';
-                                });
+                                  setState(() {
+                                    etapas.add(Etapas(
+                                        id: etapas.length + 1,
+                                        nome: etapasText.text));
+                                    etapasText.text = '';
+                                  });
+                                }
                               }
-                              }
-
                             },
                             icon: const Icon(Icons.add),
                             color: Theme.of(context).primaryColor,
@@ -278,8 +279,9 @@ class _AddTodoState extends State<AddTodo> {
                       ),
                     ),
                   ),
-                  Consumer<ToDoProvider>(builder: (context, toDo, _) {
-                    return Center(
+                  Padding(
+                    padding: const EdgeInsets.only(top: 24),
+                    child: Center(
                       child: SizedBox(
                         width: 200,
                         child: ElevatedButton(
@@ -292,23 +294,32 @@ class _AddTodoState extends State<AddTodo> {
                                   hrsEvent.minute);
 
                               if (_formKey.currentState!.validate()) {
-                                toDo.addToDo(ToDo(
+                                showLoaderDialog(context);
+                                final toDo = ToDo(
                                     titulo: titulo.text,
                                     data: finalDate.toString(),
                                     prioridade: _valorPrioridade.round(),
                                     categorias: categorias,
-                                    etapas: etapas));
-                                showMessageDialog(
-                                    context, 'Tarefa incluida com sucesso',
-                                    actions: [
-                                      TextButton(
-                                          onPressed: () =>
-                                              Navigator.pushNamedAndRemoveUntil(
-                                                  context,
-                                                  '/',
-                                                  (route) => false),
-                                          child: const Text('Ok'))
-                                    ]);
+                                    etapas: etapas);
+
+                                api.criarToDo(toDo).then((value) {
+                                  Navigator.pop(context);
+                                  if (value.titulo!.isNotEmpty) {
+                                    final snack = ScaffoldMessenger.of(context)
+                                        .showSnackBar(
+                                      SnackBar(
+                                        backgroundColor: Theme.of(context).primaryColor,
+                                        content: Text('Tarefa criada com sucesso!', 
+                                        style: textTheme.bodySmall,),
+                                      ),
+                                    );
+                                  
+                                    Navigator.pop(context, snack);
+                                  } else {
+                                    showMessageDialog(context,
+                                        'Não foi possivel cadastrar a tarefa');
+                                  }
+                                });
                               }
                             },
                             child: Text(
@@ -316,8 +327,8 @@ class _AddTodoState extends State<AddTodo> {
                               style: textTheme.labelLarge,
                             )),
                       ),
-                    );
-                  })
+                    ),
+                  ),
                 ],
               ),
             ),

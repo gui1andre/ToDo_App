@@ -5,18 +5,23 @@ import 'package:todo_list/src/api/webapi.dart';
 import '../components/todo_card.dart';
 import '../models/todo.dart';
 
-class ToDoDash extends StatelessWidget {
+class ToDoDash extends StatefulWidget {
   const ToDoDash({super.key});
 
+  @override
+  State<ToDoDash> createState() => _ToDoDashState();
+}
+
+class _ToDoDashState extends State<ToDoDash> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     TextTheme textTheme = Theme.of(context).textTheme;
-    final ChamadasApi api = ChamadasApi();
+    late final ChamadasApi api = ChamadasApi();
 
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-          onPressed: () => Navigator.pushNamed(context, '/add'),
+          onPressed: () => Navigator.pushNamed(context, '/add').then((_) => setState(() {})),
           child: const Icon(
             Icons.add,
             color: Colors.white,
@@ -28,10 +33,18 @@ class ToDoDash extends StatelessWidget {
         future: api.getTarefas(),
         builder: (context, AsyncSnapshot<List<ToDo>> snapshot) {
       switch (snapshot.connectionState) {
-       
+        case ConnectionState.waiting:
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
         case ConnectionState.done:
           
-          return SizedBox(
+          return  snapshot.data!.isEmpty ? Center(
+                  child: Text(
+                    'Sua lista de tarefas esta vazia.',
+                    style: textTheme.bodyLarge,
+                  ),
+                ) : SizedBox(
               width: size.width,
               height: size.height,
               child: Padding(

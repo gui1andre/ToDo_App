@@ -116,20 +116,8 @@
       "languageVersion": "2.12"
     },
     {
-      "name": "nested",
-      "rootUri": "file:///Users/gui1andre/.pub-cache/hosted/pub.dev/nested-1.0.0",
-      "packageUri": "lib/",
-      "languageVersion": "2.12"
-    },
-    {
       "name": "path",
       "rootUri": "file:///Users/gui1andre/.pub-cache/hosted/pub.dev/path-1.8.2",
-      "packageUri": "lib/",
-      "languageVersion": "2.12"
-    },
-    {
-      "name": "provider",
-      "rootUri": "file:///Users/gui1andre/.pub-cache/hosted/pub.dev/provider-6.0.5",
       "packageUri": "lib/",
       "languageVersion": "2.12"
     },
@@ -194,7 +182,7 @@
       "languageVersion": "2.19"
     }
   ],
-  "generated": "2023-03-13T00:11:58.929376Z",
+  "generated": "2023-03-13T18:05:02.036284Z",
   "generator": "pub",
   "generatorVersion": "2.19.3"
 }

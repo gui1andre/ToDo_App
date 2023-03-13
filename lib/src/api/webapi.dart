@@ -41,4 +41,28 @@ class ChamadasApi {
     }
     return [];
   }
+
+  Future<ToDo> criarToDo(ToDo newToDo) async{
+       final url = Uri.parse(apiLink);
+    try {
+      final String body = jsonEncode(newToDo.toJson());
+    final response = await client.post(
+      url,
+      headers: {
+        'Content-type': 'application/json',
+      },
+      body: body,
+    );
+
+    if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+      final data = ToDo.fromJson(json);
+      return data;
+    } 
+    } catch (e) {
+      throw Exception(e);
+      
+    }
+    throw Exception();
+  }
 }
