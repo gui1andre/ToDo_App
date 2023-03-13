@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:todo_list/src/components/message_dialog.dart';
-import 'package:todo_list/src/models/prioridade.dart';
 import 'package:todo_list/src/models/todo.dart';
 import 'package:todo_list/src/provider/todo_list.dart';
 
@@ -22,9 +21,11 @@ class _AddTodoState extends State<AddTodo> {
   final TextEditingController dateText = TextEditingController();
   final TextEditingController hrsText = TextEditingController();
   final TextEditingController categoria = TextEditingController();
+  final TextEditingController etapasText = TextEditingController();
   List<String> categorias = [];
   final dateFormat = DateFormat("dd/MM/yyyy");
   double _valorPrioridade = 1;
+  List<Etapas> etapas = [];
 
   Color verificarPrioridade(int prioridade) {
     if (prioridade <= 4) {
@@ -192,7 +193,7 @@ class _AddTodoState extends State<AddTodo> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 32),
+                    padding: const EdgeInsets.only(bottom: 16),
                     child: Wrap(
                       children: categorias.map((e) {
                         return Padding(
@@ -212,6 +213,71 @@ class _AddTodoState extends State<AddTodo> {
                       }).toList(),
                     ),
                   ),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: TextFormField(
+                      controller: etapasText,
+                      maxLength: 15,
+                      decoration: InputDecoration(
+                          label: Text(
+                            'Etapas',
+                            style: textTheme.labelSmall,
+                          ),
+                          suffixIcon: IconButton(
+                            onPressed: () {
+                              if(etapasText.text.length < 5){
+                                showMessageDialog(context, 'A etapa deve ter pelo menos 5 caracteres');
+                              }else{
+                                if (etapasText.text.isNotEmpty) {
+                                setState(() {
+                                  etapas.add(Etapas(
+                                      id: etapas.length + 1,
+                                      nome: etapasText.text));
+                                  etapasText.text = '';
+                                });
+                              }
+                              }
+
+                            },
+                            icon: const Icon(Icons.add),
+                            color: Theme.of(context).primaryColor,
+                          )),
+                    ),
+                  ),
+                  Visibility(
+                    visible: etapas.isNotEmpty,
+                    child: SizedBox(
+                      height: etapas.length * 50.toDouble(),
+                      child: ReorderableListView(
+                        children: [
+                          for (final item in etapas)
+                            Dismissible(
+                              onDismissed: (DismissDirection direction) {
+                                setState(() {
+                                  etapas.remove(item);
+                                });
+                              },
+                              key: ValueKey(item),
+                              child: ListTile(
+                                key: ValueKey(item),
+                                title: Text(item.nome!),
+                                trailing: const Icon(Icons.dehaze),
+                              ),
+                            )
+                        ],
+                        onReorder: (int oldIndex, int newIndex) {
+                          setState(() {
+                            if (newIndex > oldIndex) {
+                              newIndex -= 1;
+                            }
+                            final item = etapas.removeAt(oldIndex);
+                            item.id = newIndex;
+                            etapas.insert(newIndex, item);
+                          });
+                        },
+                      ),
+                    ),
+                  ),
                   Consumer<ToDoProvider>(builder: (context, toDo, _) {
                     return Center(
                       child: SizedBox(
@@ -228,10 +294,10 @@ class _AddTodoState extends State<AddTodo> {
                               if (_formKey.currentState!.validate()) {
                                 toDo.addToDo(ToDo(
                                     titulo: titulo.text,
-                                    date: finalDate,
-                                    prioridade:
-                                        Prioridade(_valorPrioridade.round()),
-                                    categorias: categorias));
+                                    data: finalDate.toString(),
+                                    prioridade: _valorPrioridade.round(),
+                                    categorias: categorias,
+                                    etapas: etapas));
                                 showMessageDialog(
                                     context, 'Tarefa incluida com sucesso',
                                     actions: [

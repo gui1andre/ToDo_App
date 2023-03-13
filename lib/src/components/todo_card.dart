@@ -4,10 +4,17 @@ import 'package:todo_list/src/components/categoria_chip.dart';
 
 import 'package:todo_list/src/models/todo.dart';
 
-class ToDoCard extends StatelessWidget {
-  ToDoCard({super.key, required this.toDo});
+class ToDoCard extends StatefulWidget {
+  ToDoCard({super.key, required this.toDo, this.isExpanded = false});
 
   final ToDo toDo;
+  bool isExpanded;
+
+  @override
+  State<ToDoCard> createState() => _ToDoCardState();
+}
+
+class _ToDoCardState extends State<ToDoCard> {
   final formatador =
       DateFormat("'Dia' dd 'de' MMMM 'de' y 'às' HH:mm 'hrs'", 'pt_BR');
 
@@ -53,70 +60,78 @@ class ToDoCard extends StatelessWidget {
 
     return SizedBox(
       width: size.width,
-      height: 200,
+
       child: Card(
         shadowColor: Colors.black,
         elevation: 8,
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                toDo.titulo,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                widget.toDo.titulo!,
                 maxLines: 1,
                 overflow: TextOverflow.fade,
                 style: textTheme.displayMedium,
               ),
-              Row(
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
                 children: [
                   const Icon(Icons.date_range),
                   Text(
-                    formatador.format(toDo.date),
+                    formatador.format(DateTime.parse(widget.toDo.data!)),
                     style: textTheme.displaySmall,
                   ),
                 ],
               ),
-              Text(
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
                 'Prioridade',
                 style: textTheme.displaySmall,
               ),
-              SizedBox(
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: SizedBox(
                 width: size.width,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Expanded(
-                      flex: toDo.prioridade.prioridade,
+                      flex: widget.toDo.prioridade!,
                       child: Container(
                         decoration: BoxDecoration(
-                            color:
-                                verificarPrioridade(toDo.prioridade.prioridade),
+                            color: verificarPrioridade(widget.toDo.prioridade!),
                             borderRadius: BorderRadius.only(
                               bottomLeft: const Radius.circular(16),
                               topLeft: const Radius.circular(16),
-                              topRight: Radius.circular(verificarBarraFinal(
-                                  toDo.prioridade.prioridade)),
-                              bottomRight: Radius.circular(verificarBarraFinal(
-                                  toDo.prioridade.prioridade)),
+                              topRight: Radius.circular(
+                                  verificarBarraFinal(widget.toDo.prioridade!)),
+                              bottomRight: Radius.circular(
+                                  verificarBarraFinal(widget.toDo.prioridade!)),
                             )),
                         height: 8,
                       ),
                     ),
                     Expanded(
-                      flex: calcularBarra(toDo.prioridade.prioridade),
+                      flex: calcularBarra(widget.toDo.prioridade!),
                       child: Container(
                         decoration: BoxDecoration(
                           color: Colors.grey,
                           borderRadius: BorderRadius.only(
                             bottomRight: const Radius.circular(16),
                             topRight: const Radius.circular(16),
-                            topLeft: Radius.circular(verificarBarraInicial(
-                                toDo.prioridade.prioridade)),
-                            bottomLeft: Radius.circular(verificarBarraInicial(
-                                toDo.prioridade.prioridade)),
+                            topLeft: Radius.circular(
+                                verificarBarraInicial(widget.toDo.prioridade!)),
+                            bottomLeft: Radius.circular(
+                                verificarBarraInicial(widget.toDo.prioridade!)),
                           ),
                         ),
                         height: 8,
@@ -125,25 +140,94 @@ class ToDoCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Text(
-                'Categorias',
-                style: textTheme.displaySmall,
-              ),
-              SizedBox(
-                height: 36,
-                child: ListView.separated(
-                  itemCount: toDo.categorias.length,
-                  shrinkWrap: true,
-                  scrollDirection: Axis.horizontal,
-                  separatorBuilder: (context, index) =>
-                      const Padding(padding: EdgeInsets.only(right: 8)),
-                  itemBuilder: (context, index) {
-                    return chipCategoria(toDo.categorias)[index];
-                  },
+            ),
+            Visibility(
+              visible: widget.toDo.categorias!.isNotEmpty,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  'Categorias',
+                  style: textTheme.displaySmall,
                 ),
               ),
-            ],
-          ),
+            ),
+            Visibility(
+              visible: widget.toDo.categorias!.isNotEmpty,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(0, 8, 0, 16),
+                child: SizedBox(
+                  height: 36,
+                  child: ListView.separated(
+                    itemCount: widget.toDo.categorias!.length,
+                    shrinkWrap: true,
+                    scrollDirection: Axis.horizontal,
+                    separatorBuilder: (context, index) =>
+                        const Padding(padding: EdgeInsets.only(right: 8)),
+                    itemBuilder: (context, index) {
+                      return chipCategoria(widget.toDo.categorias!)[index];
+                    },
+                  ),
+                ),
+              ),
+            ),
+            Visibility(
+              visible: widget.toDo.etapas!.isNotEmpty,
+              child: ExpansionPanelList(
+                animationDuration: const Duration(milliseconds: 1000),
+                children: [
+                  ExpansionPanel(
+                    body: Container(
+                      padding: const EdgeInsets.all(8),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: widget.toDo.etapas!.map((e) {
+                          return Align(
+                            alignment: Alignment.topLeft,
+                            child: ListTile(
+                              title: Text(
+                              '${e.id}. ${e.nome!}',
+                              style: TextStyle(
+                                fontWeight: textTheme.bodySmall!.fontWeight,
+                                fontSize: textTheme.bodySmall!.fontSize,
+                                decoration: e.concluido! ? TextDecoration.lineThrough : null
+                              ),
+                            ),
+                            trailing: Checkbox(value: e.concluido,
+                            onChanged: (value) {
+                              setState(() {
+                                e.concluido = value;
+                              });
+                            }),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    headerBuilder: (BuildContext context, bool isExpanded) {
+                      return Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'Etapas',
+                            style: textTheme.displaySmall,
+                            
+                          ),
+                        ),
+                      );
+                    },
+                    isExpanded: widget.isExpanded,
+                  )
+                ],
+                expansionCallback: (int item, bool status) {
+                  setState(() {
+                    widget.isExpanded = !widget.isExpanded;
+                  });
+                },
+              ),
+            )
+          ],
         ),
       ),
     );

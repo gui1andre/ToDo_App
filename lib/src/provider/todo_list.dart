@@ -5,7 +5,7 @@ import '../models/todo.dart';
 class ToDoProvider extends ChangeNotifier {
   final List<ToDo> _list = [];
   List<ToDo> get getList {
-    _list.sort((a, b) => a.date.compareTo(b.date));
+    _list.sort((a, b) => a.data!.compareTo(b.data!));
     return _list;
   }
 
